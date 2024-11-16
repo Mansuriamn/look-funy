@@ -76,19 +76,50 @@ const fetchJokesFromDB = () => {
 };
 
 // API endpoint to fetch jokes
+// app.get('/post', async (req, res) => {
+//   try {
+//     const jokes = await fetchJokesFromDB();
+//     res.json(jokes);
+//   } catch (error) {
+//     console.error('Error fetching jokes:', error);
+//     res.status(500).json({
+//       error: 'Internal server error',
+//       message: error.message || 'Please try again later'
+//     });
+//   }
+// });
+
+
 app.get('/post', async (req, res) => {
   try {
     const jokes = await fetchJokesFromDB();
-    res.json(jokes);
+    
+    if (!jokes || jokes.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'No jokes found'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      data: jokes
+    });
+
   } catch (error) {
-    console.error('Error fetching jokes:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+
     res.status(500).json({
-      error: 'Internal server error',
-      message: error.message || 'Please try again later'
+      status: 'error',
+      message: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
-
 // Serve frontend for all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(_dirname, "frontend", "dist", "index.html"));
