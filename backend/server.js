@@ -20,7 +20,14 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.static(path.join(_dirname, "/frontend/dist")));
-
+app.use(express.urlencoded({ extended: true }));
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    status: 'error',
+    message: 'Something broke!'
+  });
+});
 // Create MySQL connection pool with more detailed configuration
 const pool = mysql.createPool({
   connectionLimit: 10,
@@ -74,20 +81,6 @@ const fetchJokesFromDB = () => {
     });
   });
 };
-
-// API endpoint to fetch jokes
-// app.get('/post', async (req, res) => {
-//   try {
-//     const jokes = await fetchJokesFromDB();
-//     res.json(jokes);
-//   } catch (error) {
-//     console.error('Error fetching jokes:', error);
-//     res.status(500).json({
-//       error: 'Internal server error',
-//       message: error.message || 'Please try again later'
-//     });
-//   }
-// });
 
 
 app.get('/post', async (req, res) => {
